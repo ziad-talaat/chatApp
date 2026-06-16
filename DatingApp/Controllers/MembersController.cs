@@ -1,13 +1,9 @@
-﻿using System.Threading.Tasks;
-using Core.IServices;
-using Microsoft.AspNetCore.Http;
+﻿using Core.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DatingApp.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class MembersController(IAppUserService appUserService) : ControllerBase
+    public class MembersController(IAppUserService appUserService) : BaseApiController
     {
         private readonly IAppUserService _appUserService=appUserService;
         [HttpGet]
@@ -18,9 +14,9 @@ namespace DatingApp.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetMemberById(string id)
+        public async Task<IActionResult> GetMemberById(string id)
         {
-            var member = _appUserService.GetMemberById(id);
+            var member = await _appUserService.GetMemberById(id);
             return Ok(member);
         }
     }

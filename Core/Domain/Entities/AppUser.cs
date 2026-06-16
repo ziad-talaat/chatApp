@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity;
 
 namespace Core.Domain.Entities
 {
-    public class AppUser
+    public class AppUser:IdentityUser<Guid>
     {
-        public  string Id { get; set; } =Guid.NewGuid().ToString();
         public string DisplayName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
 
     }
 }
