@@ -1,11 +1,15 @@
+using System.Text;
 using Core.Domain.Entities;
 using Core.Domain.IRepository;
 using Core.IServices;
 using Core.Services;
 using Infrastructure.DataContext;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 namespace DatingApp
 {
     public class Program
@@ -29,7 +33,20 @@ namespace DatingApp
             //    .AddDefaultTokenProviders()
             //    .AddEntityFrameworkStores<AppDbContext>();
 
-            builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
+            builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
+            {
+                options.Password.RequiredLength = 8;
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = true;
+
+                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                options.Lockout.MaxFailedAccessAttempts = 10;
+                options.Lockout.AllowedForNewUsers = true;
+
+                options.User.RequireUniqueEmail = true;
+            })
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -37,6 +54,8 @@ namespace DatingApp
 
             builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
             builder.Services.AddScoped<IAppUserService,AppUserService>();
+            builder.Services.AddScoped<IJWTService, JWTService>();
+
             builder.Services.AddCors((opt) =>
             {
                 opt.AddPolicy("ngPolicy", policy =>
@@ -49,6 +68,24 @@ namespace DatingApp
             });
 
 
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidIssuer = builder.Configuration["jwt:issuer"],
+                    ValidAudience = builder.Configuration["jwt:audience"],
+                    ValidateLifetime=true,
+                    ValidateIssuerSigningKey=true,
+                    IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"]))
+                };
+            });
 
             var app = builder.Build();
 
@@ -60,6 +97,7 @@ namespace DatingApp
             }
             app.UseCors("ngPolicy"); 
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

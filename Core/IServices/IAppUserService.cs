@@ -10,6 +10,6 @@ namespace Core.IServices
     public interface IAppUserService
     {
         Task<List<AppUser>> GetMembers();
-        Task<AppUser?> GetMemberById(string id);
+        Task<AppUser?> GetMemberById(Guid id);
     }
 }

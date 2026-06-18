@@ -12,7 +12,7 @@ namespace Core.Services
     public class AppUserService(IUnitOfWork unitOfWork) : IAppUserService
     {
         private readonly IUnitOfWork _unitOfWork=unitOfWork;
-        public Task<AppUser?> GetMemberById(string id)
+        public Task<AppUser?> GetMemberById(Guid id)
         {
            var user= _unitOfWork.AppUser.GetById(id);
             return user;

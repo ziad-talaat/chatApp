@@ -10,6 +10,8 @@ namespace Core.Domain.Entities
     public class AppUser:IdentityUser<Guid>
     {
         public string DisplayName { get; set; } = string.Empty;
+        public string? RefreshToken { get; set; } 
+        public DateTime? RefreshTokenExpiration { get; set; } 
 
     }
 }

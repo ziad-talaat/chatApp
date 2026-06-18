@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Core.DTOS
+namespace Core.DTOS.UserDTOS
 {
-    public  sealed class AppUserDTO
+    public  sealed class RegisterDTo
     {
         [EmailAddress(ErrorMessage ="invalid Email Address")]
         [Required(ErrorMessage = " Email Address can't be blank")]

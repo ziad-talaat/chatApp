@@ -1,4 +1,5 @@
 ﻿using Core.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DatingApp.Controllers
@@ -13,8 +14,9 @@ namespace DatingApp.Controllers
             return Ok(users);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetMemberById(string id)
+        public async Task<IActionResult> GetMemberById(Guid id)
         {
             var member = await _appUserService.GetMemberById(id);
             return Ok(member);

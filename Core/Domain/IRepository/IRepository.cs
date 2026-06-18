@@ -10,7 +10,7 @@ namespace Infrastructure.IRepository
     {
         IQueryable<T> GetQuery { get; }
         Task<List<T>> GetAll();
-        Task<T?> GetById(string id);
+        Task<T?> GetById(Guid id);
 
         void Insert(T entity);
         void Update(T entity);
