@@ -35,7 +35,6 @@ namespace DatingApp.Controllers
             user = new AppUser
             {
                 Email = registerDto.Email,
-                DisplayName = registerDto.DisplayName,
                 UserName= registerDto.DisplayName,
 
             };
@@ -96,6 +95,8 @@ namespace DatingApp.Controllers
             });
 
             await _userManager.UpdateAsync(user);
+
+
 
             return Ok(response);
 

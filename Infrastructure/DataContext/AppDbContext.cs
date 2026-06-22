@@ -13,6 +13,7 @@ namespace Infrastructure.DataContext
     public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser,IdentityRole<Guid>,Guid>(options)
     {
         public DbSet<AppUser> AppUsers { get; set; }
+        public DbSet<Photo> Photos { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

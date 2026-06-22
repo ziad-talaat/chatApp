@@ -36,7 +36,7 @@ namespace Core.Services
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat,  new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
                 new Claim(ClaimTypes.NameIdentifier,appUserDTO.Email!.ToString()),
-                new Claim(ClaimTypes.Name,appUserDTO.DisplayName.ToString()),
+                new Claim(ClaimTypes.Name,appUserDTO.UserName.ToString()),
             };
 
             SymmetricSecurityKey symmetricKey = new(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
@@ -58,7 +58,7 @@ namespace Core.Services
             {
                 Token = token,
                 Email = appUserDTO.Email,
-                PersonName = appUserDTO.DisplayName,
+                PersonName = appUserDTO.UserName,
                 Expiration = expirationDate,
             };
 

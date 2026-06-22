@@ -3,6 +3,7 @@ using Core.Domain.Entities;
 using Core.Domain.IRepository;
 using Core.IServices;
 using Core.Services;
+using DatingApp.Middleware;
 using Infrastructure.DataContext;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication;
@@ -89,6 +90,7 @@ namespace DatingApp
 
             var app = builder.Build();
 
+            app.UseErrorHandling();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
