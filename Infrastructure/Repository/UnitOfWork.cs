@@ -15,6 +15,7 @@ namespace Infrastructure.Repository
         private readonly AppDbContext _context;
        
         public IRepository<AppUser> AppUser { get; private set; }
+        public IRepository<Photo> PhotoRepository { get; private set; }
 
         public int Complete()
         {
@@ -31,6 +32,7 @@ namespace Infrastructure.Repository
         {
             _context = context;
             AppUser=new Repository<AppUser>(_context);
+            PhotoRepository=new Repository<Photo>(_context);
 
         }
     }

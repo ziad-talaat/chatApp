@@ -24,7 +24,15 @@ namespace Infrastructure.Repository
         {
             return await _context.Set<T>().ToListAsync();
         }
+        public async Task<T?> GetById(Guid id, bool track)
+        {
+            var query = _context.Set<T>().AsQueryable();
 
+            if (!track)
+                query = query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync(x => EF.Property<Guid>(x, "Id") == id);
+        }
         public async Task<T?> GetById(Guid id)
         {
             return await _context.Set<T>().FindAsync(id);

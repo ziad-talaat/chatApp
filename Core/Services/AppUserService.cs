@@ -5,22 +5,52 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.IRepository;
+using Core.DTOS.MemberDTOS;
 using Core.IServices;
-
+using Microsoft.EntityFrameworkCore;
+using Core.Helper;
+using Core.Common;
+using Core.DTOS.PhotosDTOS;
 namespace Core.Services
 {
     public class AppUserService(IUnitOfWork unitOfWork) : IAppUserService
     {
         private readonly IUnitOfWork _unitOfWork=unitOfWork;
-        public Task<AppUser?> GetMemberById(Guid id)
+        public async Task<MemberDTO?> GetMemberById(Guid id)
         {
-           var user= _unitOfWork.AppUser.GetById(id);
-            return user;
+            var user =await  _unitOfWork.AppUser.GetById(id,false);
+            if (user == null)
+                return null;
+
+           return user.ToMemberDTO();
         }
 
-        public async Task<List<AppUser>> GetMembers()
+
+        public async Task<List<PhotoDTO>>GetMemberPhotos(Guid id)
         {
-             return  await  _unitOfWork.AppUser.GetAll();
+          return   await _unitOfWork.PhotoRepository.GetQuery.AsNoTracking()
+                .Where(x=>x.UserId==id).Select(x=>x.ToPhotoDTO()).ToListAsync();
+        }
+
+        public async Task<List<MemberDTO>> GetMembers()
+        {
+            return await _unitOfWork.AppUser.GetQuery.AsNoTracking().Select(x => new MemberDTO
+            {
+                Id = x.Id,
+                UserName=x.UserName,
+                DateOfBirth=x.DateOfBirth,
+                Gender=x.Gender,
+                City=x.City,
+                Country=x.Country,
+                Description=x.Description,
+                ImageUrl=x.ImageUrl,
+                Created=x.Created,
+                LastActive=x.LastActive
+
+
+            }).ToListAsync();
+
+
         }
     }
 }

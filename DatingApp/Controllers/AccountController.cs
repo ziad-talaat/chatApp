@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Core.Common;
 using Core.Domain.Entities;
 using Core.DTOS.AuthDTOS;
 using Core.DTOS.UserDTOS;
@@ -22,23 +23,33 @@ namespace DatingApp.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTo registerDto)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    var errors = GetErrors(ModelState);
-            //    return BadRequest(errors);
-            //}
+            
 
             var user =await  _userManager.FindByEmailAsync(registerDto.Email);
             if (user != null)
                 return BadRequest("Email is in use");
 
+            //user = new AppUser
+            //{
+            //    Email = registerDto.Email,
+            //    UserName = registerDto.DisplayName,
+
+            //};
+
             user = new AppUser
             {
-                Email = registerDto.Email,
-                UserName= registerDto.DisplayName,
-
+                UserName = "mohamed",
+                Email = "mohamed@email.com",
+                PhoneNumber = "01012345672",
+                DateOfBirth = new DateOnly(2003, 8, 28),
+                ImageUrl = "http://localhost:5247/images/batman.jpg",
+                Gender = "Male",
+                Description = "Junior .NET Developer",
+                City = "Fayoum",
+                Country = "Egypt"
             };
-             var result= await  _userManager.CreateAsync(user, registerDto.Password);
+
+            var result = await  _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)
                 return BadRequest(result?.Errors.FirstOrDefault()?.Description);
 
@@ -65,23 +76,18 @@ namespace DatingApp.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDTO loginDto)
         {
-            //if (!ModelState.IsValid)
-            //{
-            //    var errors = GetErrors(ModelState);
-            //    return BadRequest(errors);
-            //}
 
-            var user=await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
                 return Unauthorized("Invalid Credintials");
 
-           var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-            if(!result)
+            var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            if (!result)
                 return Unauthorized($"Invalid Credintials");
 
             var response = _jwtService.CreateJWTToken(user);
-            var refreshTokenDto=_jwtService.GetRefrehToken();
-            user.RefreshToken= refreshTokenDto.RefreshToken;
+            var refreshTokenDto = _jwtService.GetRefrehToken();
+            user.RefreshToken = refreshTokenDto.RefreshToken;
             user.RefreshTokenExpiration = refreshTokenDto.RefreshTokenExpiration;
             Response.Cookies.Append(
             "refreshToken",
@@ -95,8 +101,6 @@ namespace DatingApp.Controllers
             });
 
             await _userManager.UpdateAsync(user);
-
-
 
             return Ok(response);
 

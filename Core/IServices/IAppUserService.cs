@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
+using Core.DTOS.MemberDTOS;
+using Core.DTOS.PhotosDTOS;
 
 namespace Core.IServices
 {
     public interface IAppUserService
     {
-        Task<List<AppUser>> GetMembers();
-        Task<AppUser?> GetMemberById(Guid id);
+        Task<List<MemberDTO>> GetMembers();
+        Task<MemberDTO?> GetMemberById(Guid id);
+
+        Task<List<PhotoDTO>> GetMemberPhotos(Guid id);
     }
 }

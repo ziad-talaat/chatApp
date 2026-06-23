@@ -97,8 +97,8 @@ namespace DatingApp
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            app.UseCors("ngPolicy"); 
-
+            app.UseCors("ngPolicy");
+            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
 

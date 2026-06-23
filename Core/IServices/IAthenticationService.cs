@@ -11,9 +11,10 @@ namespace Core.IServices
 {
     public interface IJWTService
     {
-        AuthenticationResponseDTO CreateJWTToken(AppUser appUserDTO);
+        LoggedUserDTO CreateJWTToken(AppUser appUserDTO);
         RefreshTokenDTO GetRefrehToken();
 
         ClaimsPrincipal? GetClaimsPrincipal(string token);
+
     }
 }

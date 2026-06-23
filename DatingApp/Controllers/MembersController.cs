@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DatingApp.Controllers
 {
+    [Authorize]
     public class MembersController(IAppUserService appUserService) : BaseApiController
     {
         private readonly IAppUserService _appUserService=appUserService;
@@ -14,12 +15,22 @@ namespace DatingApp.Controllers
             return Ok(users);
         }
 
-        [Authorize]
+        
         [HttpGet("{id}")]
         public async Task<IActionResult> GetMemberById(Guid id)
         {
             var member = await _appUserService.GetMemberById(id);
+            if (member == null)
+                return NotFound("No such Member for this id");
             return Ok(member);
+        }
+
+        [HttpGet("{id}/photos")]
+        public async Task<IActionResult> GetMemberPhotos(Guid id)
+        {
+            var memberPhotos = await _appUserService.GetMemberPhotos(id);
+           
+            return Ok(memberPhotos);
         }
     }
 }

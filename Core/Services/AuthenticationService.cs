@@ -21,7 +21,7 @@ namespace Core.Services
         {
             _configuration= configuration;
         }
-        public AuthenticationResponseDTO CreateJWTToken(AppUser appUserDTO)
+        public LoggedUserDTO CreateJWTToken(AppUser appUserDTO)
         {
             DateTime expirationDate = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["JWT:expiration_Minutes"]));
 
@@ -54,12 +54,13 @@ namespace Core.Services
 
 
 
-            return new AuthenticationResponseDTO
+            return new LoggedUserDTO
             {
                 Token = token,
                 Email = appUserDTO.Email,
-                PersonName = appUserDTO.UserName,
-                Expiration = expirationDate,
+                UserName = appUserDTO.UserName,
+                ImageUrl=appUserDTO.ImageUrl,
+                Id = appUserDTO.Id,
             };
 
         }

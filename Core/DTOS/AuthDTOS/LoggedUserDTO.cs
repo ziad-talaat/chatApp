@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace Core.DTOS.AuthDTOS
 {
-    public class AuthenticationResponseDTO
+    public  sealed class LoggedUserDTO
     {
-        public string PersonName { get; set; }
+        public Guid Id { get; set; }
+        public string UserName { get; set; }
         public string Email { get; set; }
         public string Token { get; set; }
-        public DateTime Expiration { get; set; }
+        public string ImageUrl { get; set; }
     }
-
 
 }

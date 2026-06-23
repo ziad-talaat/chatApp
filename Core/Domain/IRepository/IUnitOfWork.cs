@@ -7,6 +7,7 @@ namespace Core.Domain.IRepository
     public interface IUnitOfWork:IDisposable
     {
          IRepository<AppUser> AppUser { get; }
+        IRepository<Photo> PhotoRepository { get;  }
         int Complete();
        
 
