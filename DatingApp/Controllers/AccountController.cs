@@ -29,12 +29,7 @@ namespace DatingApp.Controllers
             if (user != null)
                 return BadRequest("Email is in use");
 
-            //user = new AppUser
-            //{
-            //    Email = registerDto.Email,
-            //    UserName = registerDto.DisplayName,
-
-            //};
+           
 
             user = new AppUser
             {

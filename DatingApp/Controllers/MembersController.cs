@@ -1,4 +1,5 @@
-﻿using Core.IServices;
+﻿using Core.DTOS.MemberDTOS;
+using Core.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,7 @@ namespace DatingApp.Controllers
         public async  Task<IActionResult> GetMembers()
         {
               var users= await _appUserService.GetMembers();
+
             return Ok(users);
         }
 
@@ -29,8 +31,22 @@ namespace DatingApp.Controllers
         public async Task<IActionResult> GetMemberPhotos(Guid id)
         {
             var memberPhotos = await _appUserService.GetMemberPhotos(id);
-           
-            return Ok(memberPhotos);
+            return Unauthorized();
+            //return Ok(memberPhotos);
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditMember(Guid id,[FromBody] EditMemberDTO memberDTO)
+        {
+           var dataResult= await _appUserService.UpdateMember(id, memberDTO);
+            if (dataResult.Success) { 
+             return Ok(dataResult);
+            }
+            else
+            {
+                return BadRequest(dataResult);
+            }
         }
     }
 }

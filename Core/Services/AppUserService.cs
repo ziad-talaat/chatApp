@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Core.Helper;
 using Core.Common;
 using Core.DTOS.PhotosDTOS;
+using System.Security.Cryptography.X509Certificates;
 namespace Core.Services
 {
     public class AppUserService(IUnitOfWork unitOfWork) : IAppUserService
@@ -49,8 +50,32 @@ namespace Core.Services
 
 
             }).ToListAsync();
+        }
 
+        public async Task<ResultResponse<string>> UpdateMember(Guid id,EditMemberDTO memberDTO)
+        {
+            var user = await _unitOfWork.AppUser.GetById(id);
+            if (user is null)
+            {
+                return new ResultResponse<string>
+                {
+                    Success = false,
+                    DataSet = "No such User"
+                };
+            }
 
+            user.City=memberDTO.City;
+            user.Country=memberDTO.Country;
+            user.Description=memberDTO.Description;
+            user.UserName=memberDTO.UserName;
+
+            _unitOfWork.AppUser.Update(user);
+
+            return new ResultResponse<string>
+            {
+                Success = true,
+                DataSet = "user updated successfully"
+            };
         }
     }
 }
