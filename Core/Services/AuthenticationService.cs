@@ -35,7 +35,7 @@ namespace Core.Services
                 new Claim(JwtRegisteredClaimNames.Sub,appUserDTO.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat,  new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
-                new Claim(ClaimTypes.NameIdentifier,appUserDTO.Email!.ToString()),
+                new Claim(ClaimTypes.NameIdentifier,appUserDTO.Email.ToString()),
                 new Claim(ClaimTypes.Name,appUserDTO.UserName.ToString()),
             };
 
@@ -45,6 +45,7 @@ namespace Core.Services
             JwtSecurityToken tokenGenerator = new JwtSecurityToken(
                 issuer: issuer,
                 audience: adiuence,
+                claims:claims,
                 expires: expirationDate,
                 signingCredentials: credntials
                 );

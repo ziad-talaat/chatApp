@@ -70,6 +70,7 @@ namespace Core.Services
             user.UserName=memberDTO.UserName;
 
             _unitOfWork.AppUser.Update(user);
+            _unitOfWork.Complete();
 
             return new ResultResponse<string>
             {

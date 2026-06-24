@@ -1,8 +1,9 @@
-﻿using Core.DTOS.MemberDTOS;
+﻿using System.Security.Claims;
+using Core.DTOS.MemberDTOS;
 using Core.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using DatingApp.Filters.Actions;
 namespace DatingApp.Controllers
 {
     [Authorize]
@@ -31,15 +32,15 @@ namespace DatingApp.Controllers
         public async Task<IActionResult> GetMemberPhotos(Guid id)
         {
             var memberPhotos = await _appUserService.GetMemberPhotos(id);
-            return Unauthorized();
-            //return Ok(memberPhotos);
+            return Ok(memberPhotos);
         }
 
 
         [HttpPut("{id}")]
+        [EligbleUser]
         public async Task<IActionResult> EditMember(Guid id,[FromBody] EditMemberDTO memberDTO)
         {
-           var dataResult= await _appUserService.UpdateMember(id, memberDTO);
+            var dataResult= await _appUserService.UpdateMember(id, memberDTO);
             if (dataResult.Success) { 
              return Ok(dataResult);
             }
