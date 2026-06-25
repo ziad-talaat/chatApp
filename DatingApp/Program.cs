@@ -1,6 +1,7 @@
 using System.Text;
 using Core.Domain.Entities;
 using Core.Domain.IRepository;
+using Core.Helper.ConfigurationSections;
 using Core.IServices;
 using Core.Services;
 using DatingApp.Middleware;
@@ -24,6 +25,8 @@ namespace DatingApp
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.Configure<CloudinarySection>(builder.Configuration.GetSection("CloudinarySettings"));
+
             builder.Services.AddDbContext<AppDbContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
            
@@ -39,6 +42,7 @@ namespace DatingApp
               ));
 
 
+            
           
 
             builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>(options =>
@@ -63,6 +67,9 @@ namespace DatingApp
             builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
             builder.Services.AddScoped<IAppUserService,AppUserService>();
             builder.Services.AddScoped<IJWTService, JWTService>();
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
+            
+
 
             builder.Services.AddCors((opt) =>
             {

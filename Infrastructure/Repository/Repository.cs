@@ -33,7 +33,7 @@ namespace Infrastructure.Repository
 
             return await query.FirstOrDefaultAsync(x => EF.Property<Guid>(x, "Id") == id);
         }
-        public async Task<T?> GetById(Guid id)
+        public async Task<T?> GetById<P>(P id)
         {
             return await _context.Set<T>().FindAsync(id);
         }

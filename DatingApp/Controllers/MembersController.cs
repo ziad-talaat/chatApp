@@ -4,12 +4,17 @@ using Core.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DatingApp.Filters.Actions;
+using Core.Common;
+using Core.Domain.Entities;
+using Core.DTOS.PhotosDTOS;
 namespace DatingApp.Controllers
 {
     [Authorize]
-    public class MembersController(IAppUserService appUserService) : BaseApiController
+    public class MembersController(IAppUserService appUserService,
+        IPhotoService photoService) : BaseApiController
     {
         private readonly IAppUserService _appUserService=appUserService;
+        private readonly IPhotoService _photoService = photoService;
         [HttpGet]
         public async  Task<IActionResult> GetMembers()
         {
@@ -49,5 +54,61 @@ namespace DatingApp.Controllers
                 return BadRequest(dataResult);
             }
         }
+
+
+
+        [HttpPost("add-photo")]
+        public async Task<ActionResult<PhotoDTO>>UploadPhoto([FromForm] IFormFile file)
+        {
+            Guid? userId = GetLoggedInUserId();
+            if (userId is null)
+            {
+                return Unauthorized(new ResultResponse<string>
+                {
+                    Success = false,
+                    DataSet = "You need To be logged in to upload image"
+                });
+            }
+                var result=  await _photoService.UploadPhotoAsync(file, userId.Value);
+
+            if(!result.response.Success || result.photo is null)
+            {
+                return Problem("Failed to Upload The image");
+            }
+            return Ok( result.photo);
+        }
+
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<IActionResult> SetMainImage(int photoId)
+        {
+            Guid? userId = GetLoggedInUserId();
+            if (userId is null)
+            {
+                return Unauthorized("login in first");
+            }
+
+          bool isSuccess= await  _photoService.SetMainImage(photoId, userId.Value);
+            if (!isSuccess)
+                return BadRequest("Failed To Upload the image");
+
+            return NoContent();
+        }
+
+        [HttpDelete("remove-photo/{photoId}")]
+        public async Task<IActionResult> RemoveImage(int photoId)
+        {
+            Guid? userId = GetLoggedInUserId();
+            if (userId is null)
+            {
+                return Unauthorized("login in first");
+            }
+
+            bool isSuccess = await _photoService.DeleteImage(photoId, userId.Value);
+            if (!isSuccess)
+                return BadRequest("Failed To Upload the image");
+
+            return NoContent();
+        }
+
     }
 }
