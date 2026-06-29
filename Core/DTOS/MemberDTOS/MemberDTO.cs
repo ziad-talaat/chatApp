@@ -12,7 +12,7 @@ namespace Core.DTOS.MemberDTOS
     {
         public Guid Id { get; set; }
         public DateOnly DateOfBirth { get; set; }
-        public string? ImageUrl { get; set; }
+        public string? PhotoUrl { get; set; }
         public string UserName { get; set; }
         public DateTime Created { get; set; }
         public DateTime LastActive { get; set; }
@@ -22,7 +22,5 @@ namespace Core.DTOS.MemberDTOS
         public string Country { get; set; }
 
     }
-
-    
 
 }

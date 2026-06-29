@@ -3,6 +3,7 @@ using Core.Common;
 using Core.Domain.Entities;
 using Core.DTOS.AuthDTOS;
 using Core.DTOS.UserDTOS;
+using Core.Helper;
 using Core.IServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -29,20 +30,7 @@ namespace DatingApp.Controllers
             if (user != null)
                 return BadRequest("Email is in use");
 
-           
-
-            user = new AppUser
-            {
-                UserName = "mohamed",
-                Email = "mohamed@email.com",
-                PhoneNumber = "01012345672",
-                DateOfBirth = new DateOnly(2003, 8, 28),
-                ImageUrl = "http://localhost:5247/images/batman.jpg",
-                Gender = "Male",
-                Description = "Junior .NET Developer",
-                City = "Fayoum",
-                Country = "Egypt"
-            };
+            user = registerDto.ToAppUser();
 
             var result = await  _userManager.CreateAsync(user, registerDto.Password);
             if (!result.Succeeded)

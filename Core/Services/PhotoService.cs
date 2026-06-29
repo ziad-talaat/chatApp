@@ -178,5 +178,15 @@ namespace Core.Services
             _unitOfWork.Complete();
             return true;
         }
+
+
+
+        public async Task<bool> DisableMainImage(Guid userId)
+        {
+            var effected =await  _unitOfWork.AppUser.GetQuery.Where(x => x.Id == userId).ExecuteUpdateAsync(x => x.SetProperty(x => x.ImageUrl,(string?)null));
+
+            return effected > 0;
+        }
+
     }
 }

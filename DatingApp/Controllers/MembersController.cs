@@ -110,5 +110,20 @@ namespace DatingApp.Controllers
             return NoContent();
         }
 
+        [HttpPost("disaple-main-image")]
+        public async Task<IActionResult>DisableMainImage()
+        {
+            Guid? userId = GetLoggedInUserId();
+            if(userId is null)
+                return Unauthorized("login in first");
+
+           var isSuccess=  await _photoService.DisableMainImage(userId.Value);
+
+            if (isSuccess)
+                return NoContent();
+
+            return Problem("Failed To Disabled Image");
+        }
+
     }
 }

@@ -11,5 +11,6 @@ namespace Core.IServices
         Task<DeletionResult> DeletePhotoAsync(string publicId);
         Task<bool> SetMainImage(int id, Guid userId);
         Task<bool> DeleteImage(int id, Guid userId);
+        Task<bool> DisableMainImage(Guid userId);
     }
 }

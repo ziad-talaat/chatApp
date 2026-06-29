@@ -60,7 +60,7 @@ namespace Core.Services
                 Token = token,
                 Email = appUserDTO.Email,
                 UserName = appUserDTO.UserName,
-                ImageUrl=appUserDTO.ImageUrl,
+                photoUrl = appUserDTO.ImageUrl,
                 Id = appUserDTO.Id,
             };
 

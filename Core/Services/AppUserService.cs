@@ -44,7 +44,7 @@ namespace Core.Services
                 City=x.City,
                 Country=x.Country,
                 Description=x.Description,
-                ImageUrl=x.ImageUrl,
+                PhotoUrl=x.ImageUrl,
                 Created=x.Created,
                 LastActive=x.LastActive
 
