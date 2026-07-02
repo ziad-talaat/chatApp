@@ -68,6 +68,7 @@ namespace DatingApp
             builder.Services.AddScoped<IAppUserService,AppUserService>();
             builder.Services.AddScoped<IJWTService, JWTService>();
             builder.Services.AddScoped<IPhotoService, PhotoService>();
+            builder.Services.AddScoped<IUserLikesService, UserLikeService>();
             
 
 

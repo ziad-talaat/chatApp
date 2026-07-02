@@ -16,9 +16,14 @@ namespace DatingApp.Controllers
         private readonly IAppUserService _appUserService=appUserService;
         private readonly IPhotoService _photoService = photoService;
         [HttpGet]
-        public async  Task<IActionResult> GetMembers()
+        public async  Task<IActionResult> GetMembers( [FromQuery] MemberParams<MemberDTO> memParams)
         {
-              var users= await _appUserService.GetMembers();
+            var userId = GetLoggedInUserId();
+            if (userId == null)
+                return Unauthorized();
+            memParams.CurrentUserId = userId;
+
+              var users= await _appUserService.GetMembers(memParams);
 
             return Ok(users);
         }

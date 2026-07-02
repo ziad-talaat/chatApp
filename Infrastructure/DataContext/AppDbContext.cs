@@ -7,6 +7,7 @@ using Core.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.DataContext
 {
@@ -14,11 +15,29 @@ namespace Infrastructure.DataContext
     {
         public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<Photo> Photos { get; set; }
+        public DbSet<UserLikes> Likes { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+                );
+            foreach(var entiryType in modelBuilder.Model.GetEntityTypes() )
+            {
+                foreach(var property in entiryType.GetProperties())
+                {
+                    if(property.ClrType == typeof(DateTime))
+                    {
+                        property.SetValueConverter(dateTimeConverter);
+                    }
+                }
+            }
+
+
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         }

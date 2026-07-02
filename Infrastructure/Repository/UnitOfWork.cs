@@ -16,6 +16,7 @@ namespace Infrastructure.Repository
        
         public IRepository<AppUser> AppUser { get; private set; }
         public IRepository<Photo> PhotoRepository { get; private set; }
+        public IRepository<UserLikes> UserLikesRepository { get; private set; }
 
         public int Complete()
         {
@@ -33,6 +34,7 @@ namespace Infrastructure.Repository
             _context = context;
             AppUser=new Repository<AppUser>(_context);
             PhotoRepository=new Repository<Photo>(_context);
+            UserLikesRepository=new Repository<UserLikes>(_context);
 
         }
     }

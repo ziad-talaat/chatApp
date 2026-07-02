@@ -20,6 +20,17 @@ namespace Infrastructure.DataContext.DataConfiguration
 
             builder.HasMany(x => x.Photos).WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId);
+
+            builder.HasMany(x => x.UsersWhoILike)
+                .WithOne(x => x.SourceUser)
+                .HasForeignKey(x => x.SourceUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(x =>x.UsersWhoLikeMe)
+                .WithOne(x => x.TargetUser)
+                .HasForeignKey(x => x.TargetUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

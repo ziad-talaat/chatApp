@@ -12,9 +12,10 @@ namespace Core.IServices
 {
     public interface IAppUserService
     {
-        Task<List<MemberDTO>> GetMembers();
+        Task<GetPageResult<MemberDTO>> GetMembers(MemberParams<MemberDTO> memParams);
         Task<MemberDTO?> GetMemberById(Guid id);
         Task<ResultResponse<string>> UpdateMember(Guid id,EditMemberDTO memberDTO);
         Task<List<PhotoDTO>> GetMemberPhotos(Guid id);
+        Task LogLastActiveUser(Guid id);
     }
 }
