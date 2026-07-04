@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Core.Common;
 using Core.Domain.Entities;
 using Core.Domain.Enums;
 using Core.Domain.IRepository;
@@ -7,7 +7,6 @@ using Core.DTOS.UserLikeDTOS;
 using Core.Helper;
 using Core.IServices;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 namespace Core.Services
 {
     public sealed class UserLikeService : IUserLikesService
@@ -38,12 +37,23 @@ namespace Core.Services
           return  _unitOfWork.Complete();
 
         }
+        //public async Task<GetPageResult<Guid>> GetCurrentMemberLikeIds(MemberParams<MemberDTO> memParams)
+        //{
+        //    var query =  _unitOfWork.UserLikesRepository.GetQuery
+        //         .AsNoTracking().Where(x => x.SourceUserId == memParams.CurrentUserId)
+        //         .Select(x => x.TargetUserId);
+
+        //    return await GetPageResult<Guid>.GetPageAsync(query, memParams.CurrentPage, memParams.pageSize);
+
+        //}
         public async Task<IReadOnlyList<Guid>> GetCurrentMemberLikeIds(Guid memberId)
         {
-           return   await _unitOfWork.UserLikesRepository.GetQuery
-                .AsNoTracking().Where(x=>x.SourceUserId == memberId)
-                .Select(x=>x.TargetUserId).ToListAsync();
+            return await _unitOfWork.UserLikesRepository.GetQuery
+                 .AsNoTracking().Where(x => x.SourceUserId == memberId)
+                 .Select(x => x.TargetUserId).ToListAsync();
         }
+
+
         public async  Task<UserLikeDto?> GetMemberLike(Guid sourceMemberId, Guid targetMemberId)
         {
             var like= await _unitOfWork.UserLikesRepository.GetQuery.FirstOrDefaultAsync(x => x.TargetUserId == targetMemberId && x.SourceUserId == sourceMemberId);
@@ -54,22 +64,46 @@ namespace Core.Services
                 TargetUserId = like.TargetUserId,
             };
         }
-        public async Task<IReadOnlyList<MemberDTO>> GetMemberLikes(LikeTypes likeTypes, Guid memberId)
+        public async Task<MemberParams<MemberDTO>>  GetMemberLikes(LikeTypes likeTypes, MemberParams<MemberDTO> memParams)
         {
-          var query=  _unitOfWork.UserLikesRepository.GetQuery.AsNoTracking();
+            var query = _unitOfWork.UserLikesRepository.GetQuery.Include(x=>x.SourceUser).Include(x=>x.TargetUser).AsNoTracking();
+            List<MemberDTO>list = new List<MemberDTO>();
             if (likeTypes == LikeTypes.like)
             {
-                return await  query.Where(x=>x.SourceUserId==memberId)
-                    .Select(x=>x.TargetUser).Select(x=>x.ToMemberDTO()).ToListAsync();
+                query = query.Where(x => x.SourceUserId == memParams.CurrentUserId);
             }
-            if(likeTypes == LikeTypes.likedBy)
+            else if (likeTypes == LikeTypes.likedBy)
             {
-                return await query.Where(x => x.TargetUserId == memberId)
-                   .Select(x => x.SourceUser).Select(x => x.ToMemberDTO()).ToListAsync();
+               query= query.Where(x => x.TargetUserId == memParams.CurrentUserId);
             }
-            var likesId=await GetCurrentMemberLikeIds(memberId);
-            return await query.Where(x => x.TargetUserId == memberId && likesId.Contains(x.SourceUserId))
-                .Select(x => x.SourceUser).Select(x => x.ToMemberDTO()).ToListAsync();
+            else if(likeTypes == LikeTypes.mutual)
+            {
+                var likesId = (await GetCurrentMemberLikeIds(memParams.CurrentUserId.Value));
+                query= query.Where(x => x.TargetUserId == memParams.CurrentUserId && likesId.Contains(x.SourceUserId));
+
+            }
+            var data=  await  GetPageResult<UserLikes>.GetPageAsync(query, memParams.CurrentPage, memParams.pageSize);
+
+
+            if (likeTypes == LikeTypes.like)
+            {
+                list = data.PageResult.Select(x => x.TargetUser).Select(x => x.ToMemberDTO()).ToList();
+            }
+            else 
+            {
+                list = data.PageResult.Select(x => x.SourceUser).Select(x => x.ToMemberDTO()).ToList();
+            }
+            
+
+
+              return  new MemberParams<MemberDTO>
+            {
+                CurrentPage = data.CurrentPage,
+                pageSize = data.pageSize,
+                TotalItems = data.TotalItems,
+                PageResult = list
+            };
+
         }
     }
 }

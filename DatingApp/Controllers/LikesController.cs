@@ -1,8 +1,10 @@
-﻿using Core.IServices;
-using Microsoft.AspNetCore.Mvc;
-using Core.DTOS.UserLikeDTOS;
+﻿using Core.Common.newResultPattern;
 using Core.Domain.Enums;
+using Core.DTOS.MemberDTOS;
+using Core.DTOS.UserLikeDTOS;
+using Core.IServices;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DatingApp.Controllers
 {
@@ -21,7 +23,7 @@ namespace DatingApp.Controllers
         {
             var currentUSerId = GetLoggedInUserId();
             if (currentUSerId == null || currentUSerId == Guid.Empty)
-                return Unauthorized();
+                return Unauthorized(new Error("need to login "));
 
             if (currentUSerId == targetUserId)
                 return BadRequest("can't like yourself");
@@ -45,24 +47,26 @@ namespace DatingApp.Controllers
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetCurrentUserLikeIds()
+        public async Task<IActionResult> GetCurrentUserLikeIds([FromQuery] MemberParams<MemberDTO> memParams)
         {
             var currentUSerId = GetLoggedInUserId();
             if (currentUSerId == null || currentUSerId == Guid.Empty)
-                return Unauthorized();
-          var result= await _userLikeService.GetCurrentMemberLikeIds(currentUSerId.Value);
+                return Unauthorized(new Error("need to login "));
+            memParams.CurrentUserId = currentUSerId;
+            var result= await _userLikeService.GetCurrentMemberLikeIds(currentUSerId.Value);
             return Ok(result);
         }
 
 
         [HttpGet]
-        public async Task<IActionResult> GetMemberLikes(LikeTypes likeType)
+        public async Task<IActionResult> GetMemberLikes(LikeTypes likeType, [FromQuery] MemberParams<MemberDTO> memParams)
         {
             var currentUSerId = GetLoggedInUserId();
             if (currentUSerId == null || currentUSerId == Guid.Empty)
-                return Unauthorized();
-            var members = await _userLikeService.GetMemberLikes(likeType, currentUSerId.Value);
-            return Ok(members);
+                return Unauthorized(new Error("need to login "));
+            memParams.CurrentUserId = currentUSerId;
+            var membersPage = await _userLikeService.GetMemberLikes(likeType, memParams);
+            return Ok(membersPage);
         }
 
     }

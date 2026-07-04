@@ -78,7 +78,7 @@ namespace DatingApp
                 {
                     policy.AllowAnyHeader()
                     .AllowAnyMethod()
-                    .WithOrigins("http://localhost:4200");
+                    .WithOrigins("http://localhost:4200").AllowCredentials();
 
                 });
             });

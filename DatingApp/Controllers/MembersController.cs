@@ -7,6 +7,7 @@ using DatingApp.Filters.Actions;
 using Core.Common;
 using Core.Domain.Entities;
 using Core.DTOS.PhotosDTOS;
+using Core.Common.newResultPattern;
 namespace DatingApp.Controllers
 {
     [Authorize]
@@ -20,7 +21,7 @@ namespace DatingApp.Controllers
         {
             var userId = GetLoggedInUserId();
             if (userId == null)
-                return Unauthorized();
+                return Unauthorized(new Error("need to login "));
             memParams.CurrentUserId = userId;
 
               var users= await _appUserService.GetMembers(memParams);
@@ -68,11 +69,7 @@ namespace DatingApp.Controllers
             Guid? userId = GetLoggedInUserId();
             if (userId is null)
             {
-                return Unauthorized(new ResultResponse<string>
-                {
-                    Success = false,
-                    DataSet = "You need To be logged in to upload image"
-                });
+                return Unauthorized(new Error("need to login "));
             }
                 var result=  await _photoService.UploadPhotoAsync(file, userId.Value);
 
@@ -89,7 +86,7 @@ namespace DatingApp.Controllers
             Guid? userId = GetLoggedInUserId();
             if (userId is null)
             {
-                return Unauthorized("login in first");
+                return Unauthorized(new Error("need to login "));
             }
 
           bool isSuccess= await  _photoService.SetMainImage(photoId, userId.Value);
@@ -105,7 +102,7 @@ namespace DatingApp.Controllers
             Guid? userId = GetLoggedInUserId();
             if (userId is null)
             {
-                return Unauthorized("login in first");
+                return Unauthorized(new Error("need to login "));
             }
 
             bool isSuccess = await _photoService.DeleteImage(photoId, userId.Value);
@@ -120,7 +117,7 @@ namespace DatingApp.Controllers
         {
             Guid? userId = GetLoggedInUserId();
             if(userId is null)
-                return Unauthorized("login in first");
+                return Unauthorized(new Error("need to login "));
 
            var isSuccess=  await _photoService.DisableMainImage(userId.Value);
 

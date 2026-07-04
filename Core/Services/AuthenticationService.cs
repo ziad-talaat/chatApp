@@ -74,7 +74,7 @@ namespace Core.Services
                 ValidateAudience = true,
                 ValidIssuer = _configuration["jwt:issuer"],
                 ValidAudience = _configuration["jwt:audience"],
-                ValidateLifetime = true,
+                ValidateLifetime = false,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["jwt:key"]))
             };

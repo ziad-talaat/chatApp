@@ -46,8 +46,8 @@ namespace DatingApp.Controllers
              new CookieOptions
              {
                  HttpOnly = true,
-                 Secure = true,
-                 SameSite = SameSiteMode.Strict,
+                 Secure = false,
+                 SameSite = SameSiteMode.Lax,
                  Expires = refreshTokenDto.RefreshTokenExpiration
              });
             await _userManager.UpdateAsync(user);
@@ -78,8 +78,8 @@ namespace DatingApp.Controllers
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
                 Expires = refreshTokenDto.RefreshTokenExpiration
             });
 
@@ -99,9 +99,9 @@ namespace DatingApp.Controllers
             if (principle == null)
                 return Unauthorized("invalid Token");
 
-            string? email = principle.FindFirstValue(ClaimTypes.NameIdentifier);
+            string? id = principle.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            AppUser? user=await _userManager.FindByEmailAsync(email);
+            AppUser? user=await _userManager.FindByIdAsync(id);
 
            var refreshToken = Request.Cookies["refreshToken"];
             if (refreshToken == null)
@@ -122,8 +122,8 @@ namespace DatingApp.Controllers
               new CookieOptions
               {
                   HttpOnly = true,
-                  Secure = true,
-                  SameSite = SameSiteMode.Strict,
+                  Secure = false,
+                  SameSite = SameSiteMode.Lax,
                   Expires = refreshTokens.RefreshTokenExpiration
               });
             
