@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,9 +12,10 @@ using Core.Domain.IRepository;
 using Core.DTOS.MessageDTOS;
 using Core.Helper;
 using Core.IServices;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace Core.Services
 {
@@ -21,10 +23,15 @@ namespace Core.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMemoryCache _memoryCach;
-        public MessageService(IUnitOfWork unitOfWork, IMemoryCache memoryCach)
+        private readonly MessageChachManager _cachManager;
+
+       
+
+        public MessageService(IUnitOfWork unitOfWork, IMemoryCache memoryCach, MessageChachManager cachManager)
         {
             _unitOfWork= unitOfWork;
             _memoryCach= memoryCach;
+            _cachManager = cachManager;
         }
         public async Task<Result<MessageDto>> AddMessage(CreateMessageDto messageDto, Guid currentUserId)
         {
@@ -40,6 +47,13 @@ namespace Core.Services
            _unitOfWork.MessageRepository.Insert(message);
             _unitOfWork.Complete();
             _memoryCach.Remove($"getMessageThread_{currentUserId}_${messageDto.RecipientId}");
+            if (_cachManager.UserTokens.TryGetValue(currentUserId, out var token))
+            {
+                token.Cancel();
+                token.Dispose();
+
+                _cachManager.UserTokens[currentUserId] = new CancellationTokenSource();
+            }
             MessageDto dto = message.ToMessageDto();
 
             dto.SenderName = sender?.UserName;
@@ -70,9 +84,25 @@ namespace Core.Services
             {
                 _unitOfWork.MessageRepository.Delete(message);
             }
-
-
             _unitOfWork.Complete();
+
+            var otherUser =
+    message.SenderId == memberId
+        ? message.RecipientId
+        : message.SenderId;
+
+            _memoryCach.Remove($"getMessageThread_{memberId}_${otherUser}");
+            _memoryCach.Remove($"getMessageThread_{otherUser}_${memberId}");
+
+
+            if(_cachManager.UserTokens.TryGetValue(memberId, out var token)){
+                token.Cancel();
+                token.Dispose();
+
+                _cachManager.UserTokens[memberId] = new CancellationTokenSource();
+            }
+
+
             return Result.Success();
         }
 
@@ -90,6 +120,8 @@ namespace Core.Services
            return( await  _memoryCach.GetOrCreateAsync($"MessagesForUser_{messagesParams.MemberId}_{messagesParams.Container}_{messagesParams.CurrentPage}_{messagesParams.pageSize}", async entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+                var token = _cachManager.GetUserToken(messagesParams.MemberId);
+                entry.AddExpirationToken(new CancellationChangeToken(token.Token));
                 var query = _unitOfWork.MessageRepository.GetQuery.Include(x=>x.Sender).Include(x=>x.Recipient).AsNoTracking();
                 if (messagesParams.Container == ContainerOptions.inbox)
                 {

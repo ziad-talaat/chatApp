@@ -27,7 +27,7 @@ namespace DatingApp
             builder.Services.AddSwaggerGen();
             builder.Services.Configure<CloudinarySection>(builder.Configuration.GetSection("CloudinarySettings"));
             builder.Services.AddMemoryCache();
-            builder.Services.AddResponseCaching();
+            builder.Services.AddOutputCache();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
              options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -72,6 +72,7 @@ namespace DatingApp
             builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddScoped<IUserLikesService, UserLikeService>();
             builder.Services.AddScoped<IMessageService, MessageService>();
+            builder.Services.AddSingleton<MessageChachManager>();
 
 
             builder.Services.AddCors((opt) =>
@@ -118,7 +119,7 @@ namespace DatingApp
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseResponseCaching();
+            app.UseOutputCache();
 
 
             app.MapControllers();

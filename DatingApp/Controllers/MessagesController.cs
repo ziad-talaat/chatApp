@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Core.Common;
 using Core.DTOS.MemberDTOS;
+using Microsoft.AspNetCore.OutputCaching;
 namespace DatingApp.Controllers
 {
     
@@ -31,7 +32,6 @@ namespace DatingApp.Controllers
 
 
         [HttpGet]
-        [ResponseCache(Duration = 60,VaryByQueryKeys = ["*"])]
         public async Task<ActionResult<GetPageResult<MessageDto>>> GetMessagesByContainer([FromQuery]MessageParam<MessageDto> messparams)
         {
             var senderId = GetLoggedInUserId();
