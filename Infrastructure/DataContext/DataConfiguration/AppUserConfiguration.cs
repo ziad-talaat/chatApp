@@ -31,6 +31,19 @@ namespace Infrastructure.DataContext.DataConfiguration
                 .HasForeignKey(x => x.TargetUserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+
+
+
+            builder.HasMany(x=>x.SendMessages)
+                .WithOne(x=>x.Sender)
+                .HasForeignKey(x=>x.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.HasMany(x => x.RecipientMessages)
+               .WithOne(x => x.Recipient)
+               .HasForeignKey(x => x.RecipientId)
+               .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

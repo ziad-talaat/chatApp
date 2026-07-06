@@ -22,13 +22,12 @@ namespace Core.Domain.Entities
 
         public ICollection<Photo>? Photos { get; set; } = new List<Photo>();
 
-
         public ICollection<UserLikes> UsersWhoILike { get; set; } = new List<UserLikes>();
         public ICollection<UserLikes> UsersWhoLikeMe { get; set; } = new List<UserLikes>();
 
 
-
-
+        public ICollection<Message> SendMessages { get; set; } = new List<Message>();
+        public ICollection<Message> RecipientMessages { get; set; } = new List<Message>();
 
 
     }

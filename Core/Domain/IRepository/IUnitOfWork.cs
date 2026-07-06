@@ -9,6 +9,7 @@ namespace Core.Domain.IRepository
          IRepository<AppUser> AppUser { get; }
         IRepository<Photo> PhotoRepository { get;  }
         IRepository<UserLikes> UserLikesRepository { get;  }
+        IRepository<Message> MessageRepository { get;  }
         int Complete();
        
 

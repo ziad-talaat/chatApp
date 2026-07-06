@@ -16,6 +16,7 @@ namespace Infrastructure.DataContext
         public DbSet<AppUser> AppUsers { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<UserLikes> Likes { get; set; }
+        public DbSet<Message> Message { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,13 +26,22 @@ namespace Infrastructure.DataContext
                 v => v.ToUniversalTime(),
                 v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
                 );
-            foreach(var entiryType in modelBuilder.Model.GetEntityTypes() )
+
+            var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
+               v => v.HasValue ? v.Value.ToUniversalTime() : null,
+               v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : null
+               );
+            foreach (var entiryType in modelBuilder.Model.GetEntityTypes() )
             {
                 foreach(var property in entiryType.GetProperties())
                 {
                     if(property.ClrType == typeof(DateTime))
                     {
                         property.SetValueConverter(dateTimeConverter);
+                    }
+                    else if(property.ClrType == typeof(DateTime?))
+                    {
+                        property.SetValueConverter(nullableDateTimeConverter);
                     }
                 }
             }
