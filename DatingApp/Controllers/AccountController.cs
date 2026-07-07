@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Core.Common;
+using Core.Common.newResultPattern;
 using Core.Domain.Entities;
 using Core.DTOS.AuthDTOS;
 using Core.DTOS.UserDTOS;
@@ -24,8 +25,6 @@ namespace DatingApp.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDTo registerDto)
         {
-            
-
             var user =await  _userManager.FindByEmailAsync(registerDto.Email);
             if (user != null)
                 return BadRequest("Email is in use");
@@ -36,7 +35,9 @@ namespace DatingApp.Controllers
             if (!result.Succeeded)
                 return BadRequest(result?.Errors.FirstOrDefault()?.Description);
 
-            var response = _jwtService.CreateJWTToken(user);
+            await _userManager.AddToRoleAsync(user, UserRoles.MemberRole);
+
+            var response = await _jwtService.CreateJWTToken(user);
             var refreshTokenDto = _jwtService.GetRefrehToken();
             user.RefreshToken= refreshTokenDto.RefreshToken;
             user.RefreshTokenExpiration= refreshTokenDto.RefreshTokenExpiration;
@@ -62,13 +63,22 @@ namespace DatingApp.Controllers
 
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
             if (user == null)
-                return Unauthorized("Invalid Credintials");
+                return Unauthorized(new Error("Invalid Credintials"));
 
-            var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
-            if (!result)
-                return Unauthorized($"Invalid Credintials");
+            if (await _userManager.IsLockedOutAsync(user))
+                return Unauthorized(new Error("Account is locked"));
 
-            var response = _jwtService.CreateJWTToken(user);
+
+
+            if(! await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            {
+               await _userManager.AccessFailedAsync(user);
+                return Unauthorized(new Error($"Invalid Credintials"));
+            }
+
+          await _userManager.ResetAccessFailedCountAsync(user);
+
+            var response = await _jwtService.CreateJWTToken(user);
             var refreshTokenDto = _jwtService.GetRefrehToken();
             user.RefreshToken = refreshTokenDto.RefreshToken;
             user.RefreshTokenExpiration = refreshTokenDto.RefreshTokenExpiration;
@@ -97,7 +107,7 @@ namespace DatingApp.Controllers
 
             ClaimsPrincipal?principle=_jwtService.GetClaimsPrincipal(token);
             if (principle == null)
-                return Unauthorized("invalid Token");
+                return Unauthorized(new Error( "invalid Token"));
 
             string? id = principle.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -109,9 +119,9 @@ namespace DatingApp.Controllers
 
 
             if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiration <= DateTime.UtcNow)
-                return Unauthorized("invalid Data");
+                return Unauthorized(new Error("invalid Data"));
 
-            var response = _jwtService.CreateJWTToken(user);
+            var response =await _jwtService.CreateJWTToken(user);
 
             var refreshTokens= _jwtService.GetRefrehToken();
             user.RefreshToken = refreshTokens.RefreshToken;

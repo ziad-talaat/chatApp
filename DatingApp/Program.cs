@@ -1,9 +1,12 @@
 using System.Text;
+using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.Domain.IRepository;
+using Core.Helper;
 using Core.Helper.ConfigurationSections;
 using Core.IServices;
 using Core.Services;
+using DatingApp.Consts;
 using DatingApp.Middleware;
 using Infrastructure.DataContext;
 using Infrastructure.Repository;
@@ -16,7 +19,7 @@ namespace DatingApp
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +59,7 @@ namespace DatingApp
                 options.Password.RequireNonAlphanumeric = true;
 
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                options.Lockout.MaxFailedAccessAttempts = 10;
+                options.Lockout.MaxFailedAccessAttempts = 5;
                 options.Lockout.AllowedForNewUsers = true;
 
                 options.User.RequireUniqueEmail = true;
@@ -106,6 +109,17 @@ namespace DatingApp
                 };
             });
 
+
+            builder.Services.AddAuthorizationBuilder()
+                .AddPolicy(AuthorizationPolicies.AdminPolicy, policy => policy.RequireRole(UserRoles.AdminRole))
+                .AddPolicy(AuthorizationPolicies.AdminModeratorPolicy, policy => {
+                    policy.RequireRole(UserRoles.AdminRole);
+                    policy.RequireRole(UserRoles.ModeratorRole);
+                    }
+                  );
+                
+
+
             var app = builder.Build();
 
             app.UseErrorHandling();
@@ -120,9 +134,24 @@ namespace DatingApp
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseOutputCache();
-
-
             app.MapControllers();
+
+
+            using var scope = app.Services.CreateScope();
+            var service = scope.ServiceProvider;
+            try
+            {
+                var context = service.GetRequiredService<AppDbContext>();
+                var _userManager = service.GetRequiredService<UserManager<AppUser>>();
+                var _roleManager = service.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+                await context.Database.MigrateAsync();
+                await Seed.SeedUsers(_userManager, _roleManager);
+            }
+            catch (Exception ex)
+            {
+                var logger=service.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "an error accured  during migration");
+            }
 
             app.Run();
         }

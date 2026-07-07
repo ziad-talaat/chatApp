@@ -113,6 +113,7 @@ namespace Core.Services
                 return null;
             return MessageHelper.ToMessageDto(message);
 
+
         }
 
         public async Task<GetPageResult<MessageDto>> GetMessagesForUser(MessageParam<MessageDto> messagesParams)

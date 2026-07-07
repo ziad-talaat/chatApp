@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Core.Domain.Entities;
 using Core.DTOS.AuthDTOS;
 using Core.IServices;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -17,11 +18,13 @@ namespace Core.Services
     public sealed class JWTService : IJWTService
     {
         private readonly IConfiguration _configuration;
-        public JWTService(IConfiguration configuration)
+        private readonly UserManager<AppUser> _userManager;
+        public JWTService(IConfiguration configuration, UserManager<AppUser> userManager)
         {
             _configuration= configuration;
+            _userManager= userManager;
         }
-        public LoggedUserDTO CreateJWTToken(AppUser appUserDTO)
+        public async Task< LoggedUserDTO> CreateJWTToken(AppUser appUserDTO)
         {
             DateTime expirationDate = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["JWT:expiration_Minutes"]));
 
@@ -29,15 +32,30 @@ namespace Core.Services
             string adiuence= _configuration["jwt:audience"];
 
 
-
-            Claim[] claims = new Claim[]
-            {
+            var claims = new List<Claim>
+           {
                 new Claim(JwtRegisteredClaimNames.Sub,appUserDTO.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Iat,  new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString()),
                 new Claim(ClaimTypes.NameIdentifier,appUserDTO.Email.ToString()),
                 new Claim(ClaimTypes.Name,appUserDTO.UserName.ToString()),
-            };
+
+           };
+
+
+            var roles = await _userManager.GetRolesAsync(appUserDTO);
+
+            List<Claim> claimsRoles = new List<Claim>();
+            foreach(var role in roles)
+            {
+                claimsRoles.Add(new Claim("role", role));
+            }
+
+            claims.AddRange(claimsRoles);
+           
+
+
+           
 
             SymmetricSecurityKey symmetricKey = new(Encoding.UTF8.GetBytes(_configuration["JWT:key"]));
             SigningCredentials credntials = new SigningCredentials(symmetricKey, SecurityAlgorithms.HmacSha256);
