@@ -1,5 +1,6 @@
 ﻿using Core.Common.newResultPattern;
 using Core.Domain.Entities;
+using Core.Helper;
 using DatingApp.Consts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -44,6 +45,10 @@ namespace DatingApp.Controllers
             if (string.IsNullOrEmpty(roles))
             {
                 return BadRequest(new Error("you must provide at least one role"));
+            }
+            if (!roles.Split(',').Any(r => r == UserRoles.MemberRole))
+            {
+                return BadRequest(new Error("cant Delete Member Role"));
             }
 
 

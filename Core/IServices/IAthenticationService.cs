@@ -13,7 +13,7 @@ namespace Core.IServices
     {
         Task<LoggedUserDTO> CreateJWTToken(AppUser appUserDTO);
         RefreshTokenDTO GetRefrehToken();
-
+        Task<AppUser?> GetUserByValidRefreshToken(string refreshToken);
         ClaimsPrincipal? GetClaimsPrincipal(string token);
 
     }

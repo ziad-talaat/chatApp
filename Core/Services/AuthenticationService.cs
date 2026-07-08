@@ -7,9 +7,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Core.Domain.Entities;
+using Core.Domain.IRepository;
 using Core.DTOS.AuthDTOS;
 using Core.IServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -19,10 +21,12 @@ namespace Core.Services
     {
         private readonly IConfiguration _configuration;
         private readonly UserManager<AppUser> _userManager;
-        public JWTService(IConfiguration configuration, UserManager<AppUser> userManager)
+        private readonly IUnitOfWork _unitOfWork;
+        public JWTService(IConfiguration configuration, UserManager<AppUser> userManager, IUnitOfWork unitOfWork)
         {
             _configuration= configuration;
             _userManager= userManager;
+            _unitOfWork= unitOfWork;
         }
         public async Task< LoggedUserDTO> CreateJWTToken(AppUser appUserDTO)
         {
@@ -127,5 +131,17 @@ namespace Core.Services
 
 
         }
+
+
+        public async Task<AppUser?> GetUserByValidRefreshToken(string refreshToken)
+        {
+            AppUser? user = await _unitOfWork.AppUser.GetQuery
+                .FirstOrDefaultAsync(x => x.RefreshToken == refreshToken && x.RefreshTokenExpiration > DateTime.UtcNow);
+            if (user == null)
+                return null;
+            return user;
+        }
+
+
     }
 }

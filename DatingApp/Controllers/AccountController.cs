@@ -100,29 +100,34 @@ namespace DatingApp.Controllers
         }
 
         [HttpPost("generateNewAccessToken")]
-        public async Task<IActionResult> GenerateNewAccessToken(string token)
+        public async Task<IActionResult> GenerateNewAccessToken()
         {
-            if (token is null)
-                return BadRequest("token is not exist");
+            //if (token is null)
+            //    return BadRequest("token is not exist");
 
-            ClaimsPrincipal?principle=_jwtService.GetClaimsPrincipal(token);
-            if (principle == null)
-                return Unauthorized(new Error( "invalid Token"));
 
-            string? id = principle.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            AppUser? user=await _userManager.FindByIdAsync(id);
+            ////ClaimsPrincipal?principle=_jwtService.GetClaimsPrincipal(token);
+            ////if (principle == null)
+            ////    return Unauthorized(new Error( "invalid Token"));
+
+            ////string? id = principle.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            ////AppUser? user=await _userManager.FindByIdAsync(id);
+
 
            var refreshToken = Request.Cookies["refreshToken"];
             if (refreshToken == null)
                 return Unauthorized();
 
+            AppUser?user= await _jwtService.GetUserByValidRefreshToken(refreshToken);
 
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiration <= DateTime.UtcNow)
+
+            if (user == null)
                 return Unauthorized(new Error("invalid Data"));
 
-            var response =await _jwtService.CreateJWTToken(user);
 
+            var response =await _jwtService.CreateJWTToken(user);
             var refreshTokens= _jwtService.GetRefrehToken();
             user.RefreshToken = refreshTokens.RefreshToken;
             user.RefreshTokenExpiration = refreshTokens.RefreshTokenExpiration;
