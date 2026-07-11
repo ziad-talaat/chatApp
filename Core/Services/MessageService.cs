@@ -33,7 +33,14 @@ namespace Core.Services
             _memoryCach= memoryCach;
             _cachManager = cachManager;
         }
-        public async Task<Result<MessageDto>> AddMessage(CreateMessageDto messageDto, Guid currentUserId)
+
+        public void AddGroup(Group group)
+        {
+           _unitOfWork.GroupRepository.Insert(group);
+          
+        }
+
+        public async Task<Result<MessageDto>> AddMessage(CreateMessageDto messageDto, Guid currentUserId,bool userInChat=false)
         {
             var recipient= await _unitOfWork.AppUser.GetById(messageDto.RecipientId);
             var sender= await _unitOfWork.AppUser.GetById(currentUserId);
@@ -43,6 +50,10 @@ namespace Core.Services
             }
 
             var message=messageDto.GetMessage(currentUserId);
+            if (userInChat)
+            {
+                message.DateRead= DateTime.UtcNow;
+            }
 
            _unitOfWork.MessageRepository.Insert(message);
             _unitOfWork.Complete();
@@ -106,14 +117,29 @@ namespace Core.Services
             return Result.Success();
         }
 
+        public async  Task<Connection?> GetConnection(string connectionId)
+        {
+           return await _unitOfWork.ConnectionRepository.GetById(connectionId);
+        }
+
+        public async  Task<Group?> GetGroupForConnection(string connectionId)
+        {
+            return await _unitOfWork.GroupRepository.GetQuery
+                .Include(x => x.Connections).Where(x => x.Connections.Any(x => x.ConnectionId == connectionId)).FirstOrDefaultAsync();
+        }
+
         public async Task<MessageDto?> GetMessage(Guid messageId)
         {
           var message= await _unitOfWork.MessageRepository.GetQuery.AsNoTracking().Include(x=>x.Sender).Include(x=>x.Recipient).SingleOrDefaultAsync(x=>x.Id==messageId);
             if (message == null)
                 return null;
             return MessageHelper.ToMessageDto(message);
-
-
+        }
+        public async Task<Group?> GetMessageGroup(string groupName)
+        {
+            return await _unitOfWork.GroupRepository
+                 .GetQuery.Include(x => x.Connections)
+                 .FirstOrDefaultAsync(x => x.Name == groupName);
         }
 
         public async Task<GetPageResult<MessageDto>> GetMessagesForUser(MessageParam<MessageDto> messagesParams)
@@ -159,6 +185,16 @@ namespace Core.Services
             }))!;
 
             return data;
+        }
+
+        public async Task<Result> RemoveConnection(string connectionId)
+        {
+            var connection=await _unitOfWork.ConnectionRepository.GetById(connectionId);
+            if (connection == null) return Result.Failure(new Error("no such connection"));
+
+            _unitOfWork.ConnectionRepository.Delete(connection);
+            _unitOfWork.Complete();
+            return Result.Success();
         }
     }
 }

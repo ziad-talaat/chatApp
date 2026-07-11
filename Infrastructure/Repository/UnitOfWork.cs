@@ -18,6 +18,8 @@ namespace Infrastructure.Repository
         public IRepository<Photo> PhotoRepository { get; private set; }
         public IRepository<UserLikes> UserLikesRepository { get; private set; }
         public IRepository<Message> MessageRepository { get; private set; }
+        public IRepository<Connection> ConnectionRepository { get; private set; }
+        public IRepository<Group> GroupRepository { get; private set; }
 
         public int Complete()
         {
@@ -37,6 +39,9 @@ namespace Infrastructure.Repository
             PhotoRepository=new Repository<Photo>(_context);
             UserLikesRepository=new Repository<UserLikes>(_context);
             MessageRepository=new Repository<Message>(_context);
+            GroupRepository=new Repository<Group>(_context);
+            ConnectionRepository=new Repository<Connection>(_context);
+
         }
     }
 }

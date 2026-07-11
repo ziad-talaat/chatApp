@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Core.CustomeValidation;
@@ -46,6 +47,16 @@ namespace Core.Helper
                  PhoneNumber = user.PhoneNumber,
                  Email= user.Email,
             };
+        }
+
+
+        public static Guid GetMemberId(this ClaimsPrincipal user)
+        {
+            var id = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            return id is null
+                ? throw new Exception("Cannot get member id from token")
+                : Guid.Parse(id);
         }
     }
 }

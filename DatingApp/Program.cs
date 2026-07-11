@@ -8,10 +8,12 @@ using Core.IServices;
 using Core.Services;
 using DatingApp.Consts;
 using DatingApp.Middleware;
+using DatingApp.SignalR;
 using Infrastructure.DataContext;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -29,6 +31,7 @@ namespace DatingApp
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.Configure<CloudinarySection>(builder.Configuration.GetSection("CloudinarySettings"));
+            builder.Services.AddSignalR();
             builder.Services.AddMemoryCache();
             builder.Services.AddOutputCache();
 
@@ -76,6 +79,7 @@ namespace DatingApp
             builder.Services.AddScoped<IUserLikesService, UserLikeService>();
             builder.Services.AddScoped<IMessageService, MessageService>();
             builder.Services.AddSingleton<MessageChachManager>();
+            builder.Services.AddSingleton<PresenceTracker>();
 
 
             builder.Services.AddCors((opt) =>
@@ -107,6 +111,20 @@ namespace DatingApp
                     ValidateIssuerSigningKey=true,
                     IssuerSigningKey=new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["jwt:key"]))
                 };
+
+                options.Events = new JwtBearerEvents()
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(token) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = token;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
 
@@ -135,6 +153,8 @@ namespace DatingApp
             app.UseAuthorization();
             app.UseOutputCache();
             app.MapControllers();
+            app.MapHub<PresenceHub>("hubs/presence");
+            app.MapHub<MessageHub>("hubs/messages");
 
 
             using var scope = app.Services.CreateScope();
@@ -145,6 +165,7 @@ namespace DatingApp
                 var _userManager = service.GetRequiredService<UserManager<AppUser>>();
                 var _roleManager = service.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
                 await context.Database.MigrateAsync();
+                await context.Connections.ExecuteDeleteAsync();
                 await Seed.SeedUsers(_userManager, _roleManager);
             }
             catch (Exception ex)
