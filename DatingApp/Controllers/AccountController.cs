@@ -6,6 +6,8 @@ using Core.DTOS.AuthDTOS;
 using Core.DTOS.UserDTOS;
 using Core.Helper;
 using Core.IServices;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -144,6 +146,15 @@ namespace DatingApp.Controllers
             
             await _userManager.UpdateAsync(user);
             return Ok(response);
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<ActionResult> LogOut()
+        {
+            await _jwtService.LogOut();
+            Response.Cookies.Delete("refreshToken");
+            return Ok();
         }
 
     }

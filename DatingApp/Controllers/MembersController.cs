@@ -42,7 +42,14 @@ namespace DatingApp.Controllers
         [HttpGet("{id}/photos")]
         public async Task<IActionResult> GetMemberPhotos(Guid id)
         {
-            var memberPhotos = await _appUserService.GetMemberPhotos(id);
+            var loggedUser = GetLoggedInUserId();
+            if (loggedUser==null)
+            {
+                return BadRequest();
+            }
+
+
+            var memberPhotos = await _appUserService.GetMemberPhotos(id,loggedUser.Value);
             return Ok(memberPhotos);
         }
 

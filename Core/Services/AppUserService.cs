@@ -27,10 +27,17 @@ namespace Core.Services
         }
 
 
-        public async Task<List<PhotoDTO>>GetMemberPhotos(Guid id)
+        public async Task<List<PhotoDTO>>GetMemberPhotos(Guid id, Guid LoggedUserId)
         {
-          return   await _unitOfWork.PhotoRepository.GetQuery.AsNoTracking()
+            if (id == LoggedUserId)
+            {
+
+            return  await _unitOfWork.PhotoRepository.GetQuery.AsNoTracking()
                 .Where(x=>x.UserId==id).Select(x=>x.ToPhotoDTO()).ToListAsync();
+            }
+            return await _unitOfWork.PhotoRepository.GetQuery.AsNoTracking()
+               .Where(x => x.UserId == id && x.IsApproaved).Select(x => x.ToPhotoDTO()).ToListAsync();
+
         }
 
         public async Task<GetPageResult<MemberDTO>> GetMembers(MemberParams<MemberDTO> memParams)

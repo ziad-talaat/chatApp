@@ -1,27 +1,34 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Core.Common;
+using Core.Common.newResultPattern;
 using Core.Domain.Entities;
 using Core.Domain.IRepository;
 using Core.DTOS.PhotosDTOS;
+using Core.Helper;
 using Core.Helper.ConfigurationSections;
 using Core.IServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Error = Core.Common.newResultPattern.Error;
+
 namespace Core.Services
 {
     public sealed class PhotoService : IPhotoService
     {
         private readonly Cloudinary _cloudinary;
         private readonly IUnitOfWork _unitOfWork;
-        public PhotoService(IOptions<CloudinarySection> config, IUnitOfWork unitOfWork)
+        private readonly UserManager<AppUser>_userManager;
+        public PhotoService(IOptions<CloudinarySection> config, IUnitOfWork unitOfWork, UserManager<AppUser> userManager)
         {
             var account = new Account(config.Value.CloudName,
                 config.Value.ApiKey,
                 config.Value.ApiSecret);
             _cloudinary = new Cloudinary(account);
             _unitOfWork = unitOfWork;
+            _userManager = userManager;
         }
 
         public async Task<DeletionResult> DeletePhotoAsync(string publicId)
@@ -83,14 +90,14 @@ namespace Core.Services
                     Url = uploadReult.SecureUrl.AbsoluteUri,
                     PublicId = uploadReult.PublicId,
                     UserId = id,
-
                 };
-                if (user.ImageUrl == null)
-                {
-                    user.ImageUrl = photo.Url;
-                }
+                //if (user.ImageUrl == null)
+                //{
+                //    user.ImageUrl = photo.Url;
+                //}
+
                 user?.Photos?.Add(photo);
-                _unitOfWork.AppUser.Update(user);
+                //_unitOfWork.AppUser.Update(user);
                 _unitOfWork.Complete();
 
                 return (
@@ -131,7 +138,7 @@ namespace Core.Services
                 return false;
             }
 
-            var photo = user.Photos.SingleOrDefault(x => x.Id == id);
+            var photo = user.Photos.SingleOrDefault(x => x.Id == id && x.IsApproaved==true);
             if (photo == null)
                 return false;
 
@@ -177,6 +184,40 @@ namespace Core.Services
             var effected =await  _unitOfWork.AppUser.GetQuery.Where(x => x.Id == userId).ExecuteUpdateAsync(x => x.SetProperty(x => x.ImageUrl,(string?)null));
 
             return effected > 0;
+        }
+
+        public async Task<Result> ApproaveImage(int imageId,Guid eligibleUserId ,bool isApproaved=true)
+        {
+            AppUser? user = await _unitOfWork.AppUser.GetById(eligibleUserId);
+            if (user == null)
+                return Result.Failure(new Error("user not exist"));
+
+             if(! await _userManager.IsInRoleAsync(user,UserRoles.AdminRole) 
+                && ! await _userManager.IsInRoleAsync(user, UserRoles.ModeratorRole))
+             {
+                return Result.Failure(new Error("you are not capable of approaving images"));
+             }
+
+               var image=await  _unitOfWork.PhotoRepository.GetQuery
+                .AsTracking().SingleOrDefaultAsync(x=>x.Id== imageId && x.IsApproaved == false);
+
+
+            if (image == null)
+                return Result.Failure(new Error("no uch image for this id"));
+
+            if (isApproaved)
+                image.IsApproaved = true;
+            else
+                _unitOfWork.PhotoRepository.Delete(image);
+
+            _unitOfWork.Complete();
+           return Result.Success();
+        }
+
+        public async Task<List<PhotoDTO>> GetApproavableImages()
+        {
+           return  await _unitOfWork.PhotoRepository.GetQuery.Where(x => x.IsApproaved == false)
+                .Select(x => x.ToPhotoDTO()).ToListAsync();
         }
 
     }

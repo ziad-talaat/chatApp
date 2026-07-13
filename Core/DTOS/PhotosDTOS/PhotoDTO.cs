@@ -12,5 +12,6 @@ namespace Core.DTOS.PhotosDTOS
         public string  PublicId { get; set; }
         public string  PhotoUrl { get; set; }
         public Guid  MemberId { get; set; }
+        public bool IsApproaved { get; set; }
     }
 }

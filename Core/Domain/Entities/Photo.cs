@@ -12,6 +12,7 @@ namespace Core.Domain.Entities
         public int Id { get; set; }
         public required string Url { get; set; }
         public string? PublicId { get; set; }
+        public bool IsApproaved { get; set; } = false;
         public Guid UserId { get; set; }
         public AppUser User { get; set; } = null!;
     }

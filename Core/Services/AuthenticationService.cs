@@ -142,6 +142,12 @@ namespace Core.Services
             return user;
         }
 
+        public async Task LogOut()
+        {
+            await _unitOfWork.AppUser.GetQuery.ExecuteUpdateAsync(setter => setter.SetProperty(x => x.RefreshToken, _=>null)
+            .SetProperty(x=>x.RefreshTokenExpiration,_=>null));
+        }
+
 
     }
 }

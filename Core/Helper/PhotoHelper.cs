@@ -14,6 +14,7 @@ namespace Core.Helper
                PhotoUrl=photo.Url,
                PublicId=photo?.PublicId,
                MemberId=photo.UserId,
+               IsApproaved=photo.IsApproaved
             };
         }
     }

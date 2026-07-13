@@ -1,6 +1,8 @@
 ﻿using Core.Common.newResultPattern;
 using Core.Domain.Entities;
+using Core.DTOS.PhotosDTOS;
 using Core.Helper;
+using Core.IServices;
 using DatingApp.Consts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -12,9 +14,8 @@ using Microsoft.EntityFrameworkCore.SqlServer.Query.Internal;
 
 namespace DatingApp.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class AdminController(UserManager<AppUser>_userManager) : ControllerBase
+    
+    public class AdminController(UserManager<AppUser>_userManager,IPhotoService _photoService) : BaseApiController
     {
         [Authorize(Policy = AuthorizationPolicies.AdminPolicy)]
         [HttpGet("users-with-roles")]
@@ -71,6 +72,33 @@ namespace DatingApp.Controllers
 
             return Ok(await _userManager.GetRolesAsync(user));
         }
-       
+
+        [Authorize(Policy = AuthorizationPolicies.AdminModeratorPolicy)]
+        [HttpPost("Approave-image")]
+        public async Task< IActionResult> ApproaveImages(int imageId,bool isApproaved)
+        {
+            var userId = GetLoggedInUserId();
+            if (userId == null)
+                return BadRequest(new Error("user not exist log in first"));
+
+            Result result = await _photoService.ApproaveImage(imageId, userId.Value, isApproaved);
+            if (result.IsFailure)
+                return BadRequest(result.Errors);
+
+            return Ok();
+
+        }
+
+        [Authorize(Policy = AuthorizationPolicies.AdminModeratorPolicy)]
+        [HttpGet("get-approvable-Images")]
+        public async Task<ActionResult<List<PhotoDTO>>> GetApproavableImages(int imageId, bool isApproaved)
+        {
+            var result = await _photoService.GetApproavableImages();
+
+            return Ok(result);
+
+        }
+
+
     }
 }

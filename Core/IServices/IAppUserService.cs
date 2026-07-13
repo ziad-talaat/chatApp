@@ -15,7 +15,7 @@ namespace Core.IServices
         Task<GetPageResult<MemberDTO>> GetMembers(MemberParams<MemberDTO> memParams);
         Task<MemberDTO?> GetMemberById(Guid id);
         Task<ResultResponse<string>> UpdateMember(Guid id,EditMemberDTO memberDTO);
-        Task<List<PhotoDTO>> GetMemberPhotos(Guid id);
+        Task<List<PhotoDTO>> GetMemberPhotos(Guid id,Guid LoggedUserId);
         Task LogLastActiveUser(Guid id);
     }
 }

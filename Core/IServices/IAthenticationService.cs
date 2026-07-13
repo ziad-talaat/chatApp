@@ -15,6 +15,7 @@ namespace Core.IServices
         RefreshTokenDTO GetRefrehToken();
         Task<AppUser?> GetUserByValidRefreshToken(string refreshToken);
         ClaimsPrincipal? GetClaimsPrincipal(string token);
+        Task LogOut();
 
     }
 }
