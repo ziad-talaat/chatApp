@@ -148,7 +148,6 @@ namespace DatingApp
                 app.UseSwaggerUI();
             }
             app.UseCors("ngPolicy");
-            app.UseStaticFiles();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseOutputCache();
