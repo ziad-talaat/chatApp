@@ -196,5 +196,12 @@ namespace Core.Services
             _unitOfWork.Complete();
             return Result.Success();
         }
+
+
+        public async Task<IReadOnlyList<MessageDto>> UnReadMessgaes(Guid userId)
+        {
+          return  await  _unitOfWork.MessageRepository.GetQuery.AsNoTracking().Include(x=>x.Sender)
+                .Where(x => x.RecipientId == userId && x.DateRead == null).Select(x => x.ToMessageDto()).ToListAsync();
+        }
     }
 }

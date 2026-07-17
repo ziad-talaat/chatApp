@@ -1,12 +1,13 @@
 ﻿using System.Security.Claims;
 using Core.Helper;
+using Core.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
 namespace DatingApp.SignalR
 {
     [Authorize]
-    public class PresenceHub(PresenceTracker _tracker):Hub
+    public class PresenceHub(PresenceTracker _tracker,IMessageService _messageService):Hub
     {
         public override async  Task OnConnectedAsync()
         {
@@ -15,6 +16,12 @@ namespace DatingApp.SignalR
 
             var currentUsers=await  _tracker.GetOnLineUsers();
              await Clients.All.SendAsync("GetOnLineUsers", currentUsers);
+
+            var unreadMessages=await _messageService.UnReadMessgaes(GetUserId());
+
+            await Clients.Caller.SendAsync("unReadMessage", unreadMessages);
+
+            await base.OnConnectedAsync();
         }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {

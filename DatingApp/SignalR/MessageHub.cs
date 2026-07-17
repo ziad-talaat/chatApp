@@ -63,10 +63,10 @@ namespace DatingApp.SignalR
             if (messageDTOResult.IsSuccess) 
             {
                 await Clients.Group(groupName).SendAsync("NewMessage", messageDTOResult.Value);
-
                 var conectios = await PresenceTracker.GetConcurrentForUser(messageDto.RecipientId);
                 if (conectios!=null && conectios.Count()>0 && !userInGroup)
-                { 
+                {
+                    await _presenceHub.Clients.Clients(conectios).SendAsync("newUnreadMessage", messageDTOResult.Value);
                     await _presenceHub.Clients.Clients(conectios)
                         .SendAsync("MessageRecieved", messageDTOResult.Value);
                 } 
