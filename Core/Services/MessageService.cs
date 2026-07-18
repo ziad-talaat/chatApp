@@ -203,5 +203,16 @@ namespace Core.Services
           return  await  _unitOfWork.MessageRepository.GetQuery.AsNoTracking().Include(x=>x.Sender)
                 .Where(x => x.RecipientId == userId && x.DateRead == null).Select(x => x.ToMessageDto()).ToListAsync();
         }
+
+        public async Task<IReadOnlyList<Guid>> UnReadMessgaesForSpecificSenderUser(Guid userId,Guid otherUserId)
+        {
+            return await _unitOfWork.MessageRepository.GetQuery.AsNoTracking().Include(x => x.Sender)
+                  .Where(x => x.RecipientId == userId && x.SenderId==otherUserId && x.DateRead == null).Select(x => x.Id).ToListAsync();
+        }
+
+
+       
+
+
     }
 }

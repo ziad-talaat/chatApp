@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 namespace DatingApp.SignalR
 {
     [Authorize]
-    public class MessageHub(IMessageService _messageService ,IUnitOfWork _unitOfWork,IHubContext<PresenceHub>_presenceHub):Hub
+    public class MessageHub(IMessageService _messageService ,IUnitOfWork _unitOfWork,IHubContext<PresenceHub>_presenceHub) :Hub
     {
         public override async Task OnConnectedAsync()
         {
@@ -29,9 +29,21 @@ namespace DatingApp.SignalR
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
               await AddToGroup(groupName);
+            var unReadMessagesForThisChat =await  _messageService.UnReadMessgaesForSpecificSenderUser(GetUserId(), result);
             var messages = await _messageService.GetMessageThread(GetUserId(), result);
 
             await Clients.Group(groupName).SendAsync("ReceiveMessageThread", messages);
+
+
+
+            if(unReadMessagesForThisChat.Count > 0)
+            {
+                var connections =await PresenceTracker.GetConcurrentForUser(GetUserId());
+
+                await _presenceHub.Clients.Clients(connections).SendAsync("updateUnReadMessages", unReadMessagesForThisChat);
+            }
+
+
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)

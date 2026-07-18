@@ -23,5 +23,7 @@ namespace Core.IServices
         Task<Group?>GetMessageGroup(string groupName);
         Task<Group?>GetGroupForConnection(string connectionId);
         Task<IReadOnlyList<MessageDto>> UnReadMessgaes(Guid userId);
+        Task<IReadOnlyList<Guid>> UnReadMessgaesForSpecificSenderUser(Guid userId, Guid otherUserId);
+
     }
 }
